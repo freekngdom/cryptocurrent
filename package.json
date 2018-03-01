@@ -1,0 +1,30 @@
+{
+  "name": "cryptocurrency",
+  "version": "1.0.0",
+  "description": "track crypto portfolio on google sheets",
+  "bugs": {
+    "url": "https://github.com/freekngdom/cryptocurrency/issues",
+    "email": "freekngdom+cryptobugs@gmail.com"
+  },
+  "license": "ISC",
+  "author": "freekngdom",
+  "main": "cryptosheet.js",
+  "scripts": {
+    "build": "babel cryptosheet.js -o code.js",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "watch": "babel cryptosheet.js --watch -o code.js"
+  },
+  "babel": {
+    "presets": [
+      "env"
+    ]
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "babel-cli": "^6.26.0",
+    "babel-preset-env": "^1.6.1"
+  },
+  "repository": {
+    "url": "https://github.com/freekngdom/cryptocurrency"
+  }
+}

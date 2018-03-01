@@ -9,6 +9,9 @@
   "license": "ISC",
   "author": "freekngdom",
   "main": "cryptosheet.js",
+  "repository": {
+    "url": "https://github.com/freekngdom/cryptocurrent.git"
+  },
   "scripts": {
     "build": "babel cryptosheet.js -o code.js",
     "test": "echo \"Error: no test specified\" && exit 1",
@@ -23,8 +26,5 @@
   "devDependencies": {
     "babel-cli": "^6.26.0",
     "babel-preset-env": "^1.6.1"
-  },
-  "repository": {
-    "url": "https://github.com/freekngdom/cryptocurrency"
   }
 }

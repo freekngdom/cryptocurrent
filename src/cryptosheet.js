@@ -141,7 +141,7 @@ function RUN() {
         // set total
         history.getRange( 2, 2 ).setFormula( `=${ portfolioSheetName }!${ usdTotal }` );
         // set date
-        history.getRange( 2, 1 ).setValue(date);
+        history.getRange( 2, 1 ).setValue( date );
     }
 
     function getSheetWithName( name ) {
@@ -195,5 +195,7 @@ function RUN() {
     }
 }
 
-function allTimeHigh(coin) {
+function allTimeHigh( coin ) {
+    // TODO
+    return null;
 }

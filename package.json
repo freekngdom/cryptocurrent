@@ -13,9 +13,9 @@
     "url": "https://github.com/freekngdom/cryptocurrent.git"
   },
   "scripts": {
-    "build": "babel cryptosheet.js -o code.js",
+    "build": "babel src -d lib",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "watch": "babel cryptosheet.js --watch -o code.js"
+    "watch": "babel src --watch -d lib"
   },
   "babel": {
     "presets": [
@@ -26,5 +26,6 @@
   "devDependencies": {
     "babel-cli": "^6.26.0",
     "babel-preset-env": "^1.6.1"
-  }
+  },
+  "eslintIgnore": ["./lib/*.js"]
 }

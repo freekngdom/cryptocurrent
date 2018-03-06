@@ -1,4 +1,4 @@
-const coinSymbols = [
+const coins = [
     "btc",
     "eth",
     "bch",
@@ -484,6 +484,8 @@ const cmcData = [
 const additionalData = [
     "All Time High",
     "Social Sentiment",
+    "Market Cap USD",
+    "Market Cap %",
     "My Coins",
     "Current BTC Value",
     "Current USD Value",
@@ -516,6 +518,25 @@ const additionalData = [
 
 function getCmcData() {
     // TODO returned cached cmcData if fresh enough
+}
+
+function setCmcData( sheet ) {
+    const cmcRangeValues = sheet.getRange( headerRow + 1, initialColumn, coins.length, cmcData[ 0 ].length ).getValues();
+
+    for ( const r in coins ) {
+        if ( coins.hasOwnProperty( r ) ) {
+            const row = r + header + 1;
+            // check [ "id", "name", "symbol" ] for coin ... initialColumn...initialColumn+2
+            const coin = sheet.getRange( row, initialColumn, 1, initialColumn + 2 ).filter( String )[ 0 ];
+            for ( const c in cmcData[ 0 ] ) {
+                if ( cmcData[ 0 ].hasOwnProperty( c ) ) {
+                    const column = initialColumn + c;
+                    const template = sheet.getCell( row, column );
+                    sheet.getCell( row, column ).setValue( COINVALUEFROM( coin, template ) );
+                }
+            }
+        }
+    }
 }
 
 /**
@@ -575,11 +596,11 @@ function SETUP() {
     setRow( headers, test, headerRow, initialColumn );
     setRow( Object.keys( cmcGlobal ), test, 1, initialColumn );
     setRow( objectValues( cmcGlobal ), test, 2, initialColumn );
-    setColumn( coinSymbols, test, headerRow + 1, getColumnWithName( "symbol", test ) );
+    setColumn( coins, test, headerRow + 1, getColumnWithName( "symbol", test ) );
 }
 
 function fillInCmcData( sheet ) {
-// todo: fill in remaining cells with =COINVALUEFROM((currentRow,ColumnWithName("symbol")), (headerRow, currentColumn));
+    // todo: fill in remaining cells with =COINVALUEFROM((currentRow,ColumnWithName("symbol")), (headerRow, currentColumn));
 }
 
 function getSheetWithName( name ) {

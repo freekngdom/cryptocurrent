@@ -1,4 +1,4 @@
-const coins = [
+const coinSymbols = [
     "btc",
     "eth",
     "bch",
@@ -521,14 +521,14 @@ function getCmcData() {
 /**
  * Parse JSON and render the results in a string template.
  *
- * @param {"coinId"} id
+ * @param {"coinId"} coin
  *        coin id as listed on coinmarketcap api
  * @param {"templateText"} key
  *        string template for rendering results
  * @customfunction
  */
-function COINVALUEFROM( id, key ) {
-    id = id
+function COINVALUEFROM( coin, key ) {
+    coin = coin
         .trim()
         .toLowerCase()
         .replace( / /g, "-" );
@@ -539,27 +539,27 @@ function COINVALUEFROM( id, key ) {
     if ( !Array.isArray( obj ) ) {
         obj = [ obj ];
     }
-    const filteredObj = obj.filter( thisObj => thisObj.id === id || thisObj.symbol === id );
+    const filteredObj = obj.filter( thisObj => thisObj.id === coin || thisObj.symbol.toLowerCase() === coin );
     return key.replace( /\s*(\w+)\s*/g, ( match, varName ) => filteredObj[ 0 ][ varName ] );
 }
 
-function setRow( data, sheet, row, column ) {
-    const range = sheet.getRange( row, column, 1, data.length );
-    range.setValues( [ data ] );
-}
-
-function setColumn( data, sheet, row, column ) {
-    const colData = [];
-    for ( const d in data ) {
-        if ( data.hasOwnProperty( d ) ) {
-            colData.push( [ data[ d ] ] );
-        }
-    }
-    const range = sheet.getRange( row, column, data.length, 1 );
-    range.setValues( colData );
-}
-
 function SETUP() {
+    function setRow( data, sheet, row, column ) {
+        const range = sheet.getRange( row, column, 1, data.length );
+        range.setValues( [ data ] );
+    }
+
+    function setColumn( data, sheet, row, column ) {
+        const colData = [];
+        for ( const d in data ) {
+            if ( data.hasOwnProperty( d ) ) {
+                colData.push( [ data[ d ] ] );
+            }
+        }
+        const range = sheet.getRange( row, column, data.length, 1 );
+        range.setValues( colData );
+    }
+
     function objectValues( object ) {
         const vals = [];
         for ( const key in object ) {
@@ -575,7 +575,11 @@ function SETUP() {
     setRow( headers, test, headerRow, initialColumn );
     setRow( Object.keys( cmcGlobal ), test, 1, initialColumn );
     setRow( objectValues( cmcGlobal ), test, 2, initialColumn );
-    setColumn( coins, test, getColumnWithName( "symbol" ), headerRow + 1 );
+    setColumn( coinSymbols, test, headerRow + 1, getColumnWithName( "symbol", test ) );
+}
+
+function fillInCmcData( sheet ) {
+// todo: fill in remaining cells with =COINVALUEFROM((currentRow,ColumnWithName("symbol")), (headerRow, currentColumn));
 }
 
 function getSheetWithName( name ) {
@@ -592,7 +596,7 @@ function getSheetWithName( name ) {
 }
 
 function getColumnWithName( columnName, sheet ) {
-    const headers = sheet.getRange( headerRow, initialColumn, 1, sheet.getLastColumn() - initialColumn ).getValues();
+    const headers = sheet.getRange( headerRow, initialColumn, 1, sheet.getLastColumn() - initialColumn ).getValues()[ 0 ];
     const index = headers.indexOf( columnName );
     return index === -1 ? null : index + initialColumn;
 }

@@ -94,4 +94,4 @@ typings/
 tokenBalance.json
 coinmarketcap.json
 code.js
-./lib
+lib/

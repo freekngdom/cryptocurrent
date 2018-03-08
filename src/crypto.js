@@ -2,7 +2,7 @@ const coins = [
     "btc",
     "eth",
     "bch",
-    "ada",
+    "Cardano",
     "neo",
     "xlm",
     "xmr",
@@ -18,29 +18,60 @@ const coins = [
     "icx",
     "zec",
     "bnb",
-    "strat",
-    "doge",
-    "wtc",
-    "zrx",
-    "kmd",
-    "ark",
-    "bat",
-    "kcs",
-    "gas",
-    "aion",
-    "lrc",
-    "elf",
-    "eng",
-    "req",
-    "enj",
-    "dbc",
-    "xby",
-    "ast",
-    "evx",
-    "viu",
-    "xnn",
+    // "strat",
+    // "doge",
+    // "wtc",
+    // "zrx",
+    // "kmd",
+    // "ark",
+    // "bat",
+    // "kcs",
+    // "gas",
+    // "aion",
+    // "lrc",
+    // "elf",
+    // "eng",
+    // "req",
+    // "enj",
+    // "dbc",
+    // "xby",
+    // "ast",
+    // "evx",
+    // "viu",
+    // "xnn",
 ];
+const exchanges = [ "Binance", "GDAX", "Poloniex", "Bitrex", "Cryptopia", "Bitfinex", "Nanex" ];
+const additionalData = [
+    "All Time High",
+    "Social Sentiment",
+    "24h Volume %",
+    "Market Cap %",
+    "Coins Owned",
+    "Current USD Value",
+    "Current BTC Value",
+    "Portfolio Percentage",
+    "Local Wallet Quantity",
+    "Others",
+    "Purchase Price USD",
+    "Amount Paid USD",
+    "Purchase Price BTC",
+    "Amount Paid BTC",
+    "Fee",
+    "Fee Coin",
+    "Fee %",
+    "Fee USD",
+    "$Gain",
+    "%Gain",
+    "25%",
+    "10%",
+    "-5%",
+    "Public Addresses",
+    "ERC20 Contract Address",
+    "Description / Notes",
+];
+// additionalData.splice( additionalData.indexOf( "Local Wallet Quantity" ), 0, exchanges );
 
+const test = getSheetWithName( "test" );
 const headerRow = 5;
 const initialColumn = 1;
 
@@ -481,62 +512,8 @@ const cmcData = [
     },
 ];
 
-const additionalData = [
-    "All Time High",
-    "Social Sentiment",
-    "Market Cap USD",
-    "Market Cap %",
-    "My Coins",
-    "Current BTC Value",
-    "Current USD Value",
-    "Percent",
-    "Local Wallet Quantity",
-    "Binance",
-    "GDAX",
-    "others",
-    "Purchase Price USD",
-    "Amount Paid USD",
-    "Purchase Price BTC",
-    "Amount Paid BTC",
-    "Fee",
-    "Fee Coin",
-    "Fee %",
-    "Fee USD",
-    "$Gain",
-    "%Gain",
-    "25%",
-    "10%",
-    "-5%",
-    "Local%",
-    "Local Wallet Value",
-    "Exchange %",
-    "Exchange Value",
-    "Public Addresses",
-    "ERC20 Contract Address",
-    "Description / Notes",
-];
-
 function getCmcData() {
     // TODO returned cached cmcData if fresh enough
-}
-
-function setCmcData( sheet ) {
-    const cmcRangeValues = sheet.getRange( headerRow + 1, initialColumn, coins.length, cmcData[ 0 ].length ).getValues();
-
-    for ( const r in coins ) {
-        if ( coins.hasOwnProperty( r ) ) {
-            const row = r + header + 1;
-            // check [ "id", "name", "symbol" ] for coin ... initialColumn...initialColumn+2
-            const coin = sheet.getRange( row, initialColumn, 1, initialColumn + 2 ).filter( String )[ 0 ];
-            for ( const c in cmcData[ 0 ] ) {
-                if ( cmcData[ 0 ].hasOwnProperty( c ) ) {
-                    const column = initialColumn + c;
-                    const template = sheet.getCell( row, column );
-                    sheet.getCell( row, column ).setValue( COINVALUEFROM( coin, template ) );
-                }
-            }
-        }
-    }
 }
 
 /**
@@ -548,7 +525,7 @@ function setCmcData( sheet ) {
  *        string template for rendering results
  * @customfunction
  */
-function COINVALUEFROM( coin, key ) {
+function coinValueFrom( coin, key ) {
     coin = coin
         .trim()
         .toLowerCase()
@@ -564,45 +541,163 @@ function COINVALUEFROM( coin, key ) {
     return key.replace( /\s*(\w+)\s*/g, ( match, varName ) => filteredObj[ 0 ][ varName ] );
 }
 
+// todo get coins from sheet on each update
+
+function setColumn( sheet, row, column, data ) {
+    const colData = [];
+    for ( let index = 0; index < data.length; index += 1 ) {
+        colData.push( [ data[ index ] ] );
+    }
+    sheet.getRange( row, column, data.length, 1 ).setValues( colData );
+}
+
 function SETUP() {
-    function setRow( data, sheet, row, column ) {
-        const range = sheet.getRange( row, column, 1, data.length );
-        range.setValues( [ data ] );
-    }
-
-    function setColumn( data, sheet, row, column ) {
-        const colData = [];
-        for ( const d in data ) {
-            if ( data.hasOwnProperty( d ) ) {
-                colData.push( [ data[ d ] ] );
-            }
-        }
-        const range = sheet.getRange( row, column, data.length, 1 );
-        range.setValues( colData );
-    }
-
-    function objectValues( object ) {
-        const vals = [];
-        for ( const key in object ) {
-            if ( object.hasOwnProperty( key ) ) {
-                const element = object[ key ];
-                vals.push( element );
-            }
-        }
-        return vals;
-    }
+    additionalData.splice( additionalData.indexOf( "Local Wallet Quantity" ) + 1, 0, ...exchanges );
     const headers = Object.keys( cmcData[ 0 ] ).concat( additionalData );
-    const test = getSheetWithName( "test" );
-    setRow( headers, test, headerRow, initialColumn );
-    setRow( Object.keys( cmcGlobal ), test, 1, initialColumn );
-    setRow( objectValues( cmcGlobal ), test, 2, initialColumn );
-    setColumn( coins, test, headerRow + 1, getColumnWithName( "symbol", test ) );
+    test.getRange( headerRow, initialColumn, 1, headers.length ).setValues( [ headers ] );
+    test.getRange( 1, initialColumn ).setValue( [ "TOTAL:" ] );
+    setColumn( test, headerRow + 1, getColumnWithName( "id", test ), coins ); // doesn't matter which column as long as one of ["id","name","symbol"]
+    UPDATE();
+}
+function UPDATE() {
+    setCmcData( test );
+    const valueColumns = [ "Current USD Value", "Current BTC Value" ];
+    valueColumns.forEach( ( column ) => {
+        const currentCurrency = column.split( " " )[ 1 ].toLowerCase();
+        updateValues( currentCurrency, getColumnWithName( column, test ), test );
+    } );
+    updatePercents( test );
+    const times = [ "1h", "24h", "7d" ];
+    times.forEach( ( time ) => {
+        globalPercentChange( time, test );
+    } );
 }
 
-function fillInCmcData( sheet ) {
-    // todo: fill in remaining cells with =COINVALUEFROM((currentRow,ColumnWithName("symbol")), (headerRow, currentColumn));
+function setCmcData( sheet ) {
+    for ( let i = 0; i < coins.length; i += 1 ) {
+        const row = headerRow + 1 + i;
+        // check [ "id", "name", "symbol" ] for coin ... initialColumn...initialColumn+2
+        const coin = sheet
+            .getRange( row, initialColumn, 1, initialColumn + 2 )
+            .getValues()[ 0 ]
+            .filter( String )[ 0 ];
+        for ( let j = 0; j < Object.keys( cmcData[ 0 ] ).length; j += 1 ) {
+            const template = Object.keys( cmcData[ 0 ] )[ j ];
+            const column = initialColumn + j;
+            sheet.getRange( row, column ).setValue( coinValueFrom( coin, template ) );
+            if ( template.split( "_" )[ 0 ] === "percent" && template.split( "_" )[ 1 ] === "change" ) {
+                sheet.getRange( row, column ).setValue( coinValueFrom( coin, template ) / 100 );
+            } else if ( template === "24h_volume_usd" || template === "market_cap_usd" ) {
+                // set Global Data
+                sheet.getRange( 1, column ).setValue( [ `total_${ template }` ] );
+                sheet.getRange( 2, column ).setValue( cmcGlobal[ `total_${ template }` ] );
+            }
+        }
+    }
 }
 
+// todo: build objects for each coin, so that it can be set using coinValueFrom( coin, template ) from within setCmcData( sheet )
+
+/**
+ * sets value on given "Value" column
+ * and updates "Coins Owned"
+ *
+ * @param {"currency"} currency
+ *        currency compatible with coinmarketcap api, "usd","btc","eur",...
+ * @param {"column"} column
+ *        column number to set values on
+ * @param {"sheet"} sheet
+ *        sheet to work on
+ * @customfunction
+ */
+function updateValues( currency, column, sheet ) {
+    const totalCell = sheet.getRange( headerRow - 1, column );
+    const totalRange = sheet.getRange( headerRow + 1, column, coins.length, 1 );
+    const ownedColumn = getColumnWithName( "Coins Owned", sheet );
+    const localOwnedColumn = getColumnWithName( "Local Wallet Quantity", sheet );
+    const numberOwnedColumns = exchanges.length + 2;
+    const currentPriceColumn = getColumnWithName( `price_${ currency }`, sheet );
+    // currentValue = currentPrice * AmountOwned;
+    for ( let i = 0; i < coins.length; i += 1 ) {
+        const currentPrice = sheet.getRange( headerRow + 1 + i, currentPriceColumn ).getValue();
+        const owned = sheet
+            .getRange( headerRow + 1 + i, localOwnedColumn, 1, numberOwnedColumns )
+            .getValues()[ 0 ]
+            .reduce( ( x, y ) => x + y );
+        const currentValue = currentPrice * owned;
+        sheet.getRange( headerRow + 1 + i, ownedColumn ).setValue( [ owned ] );
+        sheet.getRange( headerRow + 1 + i, column ).setValue( [ currentValue ] );
+    }
+    totalCell.setValue( sum( totalRange.getValues() ) );
+    // totalCell.setValue( sum( totalRange.getValues().reduce( ( accumulator, currentValue ) => accumulator.concat( currentValue ), [] ) ) );
+}
+function updatePercents( sheet ) {
+    const portfolioPercentageColumn = getColumnWithName( "Portfolio Percentage", sheet );
+    const totalVolume = sheet.getRange( 2, getColumnWithName( "24h_volume_usd", sheet ) ).getValue();
+    const totalMarketCap = sheet.getRange( 2, getColumnWithName( "market_cap_usd", sheet ) ).getValue();
+    for ( let i = 0; i < coins.length; i += 1 ) {
+        const currentCoinValue = sheet
+            .getRange( headerRow + 1 + i, getColumnWithName( "Current USD Value", sheet ) )
+            .getValue();
+        const TotalValue = sheet.getRange( headerRow - 1, getColumnWithName( "Current USD Value", sheet ) ).getValue();
+        const percent = currentCoinValue / TotalValue;
+        sheet.getRange( headerRow + 1 + i, portfolioPercentageColumn ).setValue( [ percent ] );
+
+        const coinVolume = sheet.getRange( headerRow + 1 + i, getColumnWithName( "24h_volume_usd", sheet ) ).getValue();
+        const volumePercent = coinVolume / totalVolume;
+        sheet.getRange( headerRow + 1 + i, getColumnWithName( "24h Volume %", sheet ) ).setValue( [ volumePercent ] );
+        // Market Cap % = market_cap_usd / total_market_cap_usd
+        const coinMarketCap = sheet.getRange( headerRow + 1 + i, getColumnWithName( "market_cap_usd", sheet ) ).getValue();
+        const marketCapPercent = coinMarketCap / totalMarketCap;
+        sheet.getRange( headerRow + 1 + i, getColumnWithName( "Market Cap %", sheet ) ).setValue( [ marketCapPercent ] );
+    }
+    sheet
+        .getRange( headerRow - 1, portfolioPercentageColumn )
+        .setValue( sum( sheet.getRange( headerRow + 1, portfolioPercentageColumn, coins.length, 1 ).getValues() ) );
+    const priceColumn = getColumnWithName( "price_usd", sheet );
+    const wallets = [ "Local Wallet Quantity", "Others" ].concat( exchanges );
+    const priceRange = sheet
+        .getRange( headerRow + 1, priceColumn, coins.length, 1 )
+        .getValues()
+        .reduce( ( x, y ) => x.concat( y ), [] );
+    wallets.forEach( ( wallet ) => {
+        const quantityColumn = getColumnWithName( wallet, sheet );
+        const quantityRange = sheet
+            .getRange( headerRow + 1, quantityColumn, coins.length, 1 )
+            .getValues()
+            .reduce( ( x, y ) => x.concat( y ), [] );
+        if ( quantityRange.length > 0 ) {
+            const valueCell = sheet.getRange( headerRow - 1, quantityColumn );
+            const percentCell = sheet.getRange( headerRow - 2, quantityColumn );
+            const balance = sumProduct( quantityRange, priceRange );
+            const totalBalance = sheet
+                .getRange( headerRow - 1, getColumnWithName( "Current USD Value", sheet ) )
+                .getValue();
+            valueCell.setValue( balance );
+            percentCell.setValue( balance / totalBalance );
+        }
+    } );
+}
+
+function globalPercentChange( time, sheet ) {
+    const currentColumn = getColumnWithName( `percent_change_${ time }`, sheet );
+    const currentCell = sheet.getRange( headerRow - 2, currentColumn );
+    const totalCell = sheet.getRange( headerRow - 1, currentColumn );
+    const currentRange = sheet
+        .getRange( headerRow + 1, currentColumn, coins.length, 1 )
+        .getValues()
+        .reduce( ( x, y ) => x.concat( y ), [] );
+    const portfolioPercentageRange = sheet
+        .getRange( headerRow + 1, getColumnWithName( "Portfolio Percentage", sheet ), coins.length, 1 )
+        .getValues()
+        .reduce( ( x, y ) => x.concat( y ), [] );
+    const percent = sumProduct( currentRange, portfolioPercentageRange );
+    const myTotal = sheet.getRange( headerRow - 1, getColumnWithName( "Current USD Value", sheet ) ).getValue();
+    currentCell.setValue( [ percent ] );
+    const total = percent * myTotal;
+    totalCell.setValue( [ total ] );
+    // todo: marketCap % change for 1h, 24h, 7d
+}
 function getSheetWithName( name ) {
     const sheets = SpreadsheetApp.getActiveSpreadsheet().getSheets();
     for ( const sheet in sheets ) {
@@ -620,4 +715,40 @@ function getColumnWithName( columnName, sheet ) {
     const headers = sheet.getRange( headerRow, initialColumn, 1, sheet.getLastColumn() - initialColumn ).getValues()[ 0 ];
     const index = headers.indexOf( columnName );
     return index === -1 ? null : index + initialColumn;
+}
+
+function sum( data ) {
+    data = data.reduce( ( accumulator, currentValue ) => accumulator.concat( currentValue ), [] );
+    let total = 0;
+    for ( let i = 0; i < data.length; i += 1 ) {
+        const element = data[ i ];
+        total += element;
+    }
+    return total;
+}
+
+function sumProduct( array /* other arrays*/ ) {
+    if ( !arguments.length ) return 0;
+    if ( !Array.isArray( array ) ) return NaN;
+    let dim = arguments.length,
+        len = array.length,
+        args = [ array ],
+        sum = 0,
+        err = 0,
+        tot = 0;
+
+    for ( var i = 1; i < dim; ++i ) {
+        if ( !Array.isArray( arguments[ i ] ) || arguments[ i ].length !== len ) return NaN;
+        args[ i ] = arguments[ i ];
+    }
+
+    // modified Kahan Sum
+    for ( i = 0; i < len; ++i ) {
+        let prod = 1;
+        for ( let j = 0; j < args.length; ++j ) prod *= args[ j ][ i ];
+        sum += prod;
+        err += sum - tot - prod;
+        tot = sum;
+    }
+    return sum - err;
 }

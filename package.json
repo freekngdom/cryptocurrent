@@ -1,35 +1,38 @@
 {
-  "name": "cryptocurrent",
-  "version": "1.0.0",
-  "description": "track crypto portfolio on google sheets",
-  "bugs": {
-    "url": "https://github.com/freekngdom/cryptocurrency/issues",
-    "email": "freekngdom+cryptobugs@gmail.com"
-  },
-  "license": "ISC",
-  "author": "freekngdom",
-  "main": "cryptosheet.js",
-  "repository": {
-    "url": "https://github.com/freekngdom/cryptocurrent.git"
-  },
-  "scripts": {
-    "build": "babel src -d lib",
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "watch": "babel src --watch -d lib"
-  },
-  "babel": {
-    "presets": [
-      "env"
-    ]
-  },
-  "dependencies": {
-    "npm": "^5.7.1"
-  },
-  "devDependencies": {
-    "babel-cli": "^6.26.0",
-    "babel-preset-env": "^1.6.1"
-  },
-  "eslintIgnore": [
-    "./lib/*.js"
-  ]
+    "name": "cryptocurrent",
+    "version": "1.0.0",
+    "description": "track crypto portfolio on google sheets",
+    "bugs": {
+        "url": "https://github.com/freekngdom/cryptocurrency/issues",
+        "email": "freekngdom+cryptobugs@gmail.com"
+    },
+    "license": "ISC",
+    "author": "freekngdom",
+    "main": "cryptosheet.js",
+    "repository": {
+        "url": "https://github.com/freekngdom/cryptocurrent.git"
+    },
+    "scripts": {
+        "babel": "babel src -d lib",
+        "build": "webpack --mode production",
+        "dev": "webpack  --mode development",
+        "test": "echo \"Error: no test specified\" && exit 1",
+        "watch": "babel src --watch -d lib"
+    },
+    "babel": {
+        "presets": ["env"]
+    },
+    "dependencies": {
+        "npm": "^5.7.1",
+        "sum-product": "^1.0.0"
+    },
+    "devDependencies": {
+        "babel-cli": "^6.26.0",
+        "babel-core": "^6.26.0",
+        "babel-loader": "^7.1.4",
+        "babel-preset-env": "^1.6.1",
+        "webpack": "^4.1.1",
+        "webpack-cli": "^2.0.10"
+    },
+    "eslintIgnore": ["./lib/*.js"]
 }

@@ -91,7 +91,4 @@ typings/
 
 
 # End of https://www.gitignore.io/api/node,macos
-tokenBalance.json
-coinmarketcap.json
-code.js
 lib/

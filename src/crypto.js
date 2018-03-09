@@ -69,7 +69,6 @@ const additionalData = [
     "ERC20 Contract Address",
     "Description / Notes",
 ];
-// additionalData.splice( additionalData.indexOf( "Local Wallet Quantity" ), 0, exchanges );
 
 const test = getSheetWithName( "test" );
 const headerRow = 5;
@@ -516,12 +515,14 @@ function getCmcData() {
     // TODO returned cached cmcData if fresh enough
 }
 
+const cmcCoinCache = new Set( [] );
+
 /**
  * Parse JSON and render the results in a string template.
  *
- * @param {"coinId"} coin
+ * @param {"coin"} String
  *        coin id as listed on coinmarketcap api
- * @param {"templateText"} key
+ * @param {"key"} String
  *        string template for rendering results
  * @customfunction
  */
@@ -530,25 +531,41 @@ function coinValueFrom( coin, key ) {
         .trim()
         .toLowerCase()
         .replace( / /g, "-" );
-    // var url = encodeURI("https://api.coinmarketcap.com/v1/ticker/");
-    // var response = UrlFetchApp.fetch(url);
-    // var obj = JSON.parse(response.getContentText());
+    const url = encodeURI( "https://api.coinmarketcap.com/v1/ticker/" );
+    // const response = UrlFetchApp.fetch(url);
+    // const obj = JSON.parse(response.getContentText());
     let obj = cmcData;
     if ( !Array.isArray( obj ) ) {
         obj = [ obj ];
     }
     const filteredObj = obj.filter( thisObj => thisObj.id === coin || thisObj.symbol.toLowerCase() === coin );
+    cmcCoinCache.add( filteredObj );
     return key.replace( /\s*(\w+)\s*/g, ( match, varName ) => filteredObj[ 0 ][ varName ] );
 }
 
 // todo get coins from sheet on each update
-
+/**
+ * Apply a single dimension array of data to a given column, starting at a given row
+ *
+ * @param {"sheet"} sheet
+ *        spreadsheet
+ * @param {"row"} number
+ *        first row to set column of data to
+ * @param {"column"} number
+ *        column to set data to
+ * @param {"data"} String[]
+ *        flat array to be set
+ * @customfunction
+ */
 function setColumn( sheet, row, column, data ) {
-    const colData = [];
-    for ( let index = 0; index < data.length; index += 1 ) {
-        colData.push( [ data[ index ] ] );
-    }
-    sheet.getRange( row, column, data.length, 1 ).setValues( colData );
+    const mappedData = data.map( element => [ element ] );
+    sheet.getRange( row, column, data.length, 1 ).setValues( mappedData );
+// todo
+    // const colData = [];
+    // for ( let index = 0; index < data.length; index += 1 ) {
+    //     colData.push( [ data[ index ] ] );
+    // }
+    // sheet.getRange( row, column, data.length, 1 ).setValues( colData );
 }
 
 function SETUP() {
@@ -602,9 +619,9 @@ function setCmcData( sheet ) {
  * sets value on given "Value" column
  * and updates "Coins Owned"
  *
- * @param {"currency"} currency
+ * @param {"currency"} String
  *        currency compatible with coinmarketcap api, "usd","btc","eur",...
- * @param {"column"} column
+ * @param {"column"} number
  *        column number to set values on
  * @param {"sheet"} sheet
  *        sheet to work on

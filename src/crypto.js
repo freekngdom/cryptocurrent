@@ -557,16 +557,6 @@ function coinValueFrom( coin, key ) {
  *        flat array to be set
  * @customfunction
  */
-function setColumn( sheet, row, column, data ) {
-    const mappedData = data.map( element => [ element ] );
-    sheet.getRange( row, column, data.length, 1 ).setValues( mappedData );
-// todo
-    // const colData = [];
-    // for ( let index = 0; index < data.length; index += 1 ) {
-    //     colData.push( [ data[ index ] ] );
-    // }
-    // sheet.getRange( row, column, data.length, 1 ).setValues( colData );
-}
 
 function SETUP() {
     additionalData.splice( additionalData.indexOf( "Local Wallet Quantity" ) + 1, 0, ...exchanges );
@@ -574,7 +564,6 @@ function SETUP() {
     test.getRange( headerRow, initialColumn, 1, headers.length ).setValues( [ headers ] );
     test.getRange( 1, initialColumn ).setValue( [ "TOTAL:" ] );
     test.getRange( headerRow + 1, getColumnWithName( "id", test ), coins.length, 1 ).setValues( coins.map( x => [ x ] ) );
-    setColumn( test, headerRow + 1, getColumnWithName( "id", test ), coins ); // doesn't matter which column as long as one of ["id","name","symbol"]
     UPDATE();
 }
 function UPDATE() {

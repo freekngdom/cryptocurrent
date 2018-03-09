@@ -573,6 +573,7 @@ function SETUP() {
     const headers = Object.keys( cmcData[ 0 ] ).concat( additionalData );
     test.getRange( headerRow, initialColumn, 1, headers.length ).setValues( [ headers ] );
     test.getRange( 1, initialColumn ).setValue( [ "TOTAL:" ] );
+    test.getRange( headerRow + 1, getColumnWithName( "id", test ), coins.length, 1 ).setValues( coins.map( x => [ x ] ) );
     setColumn( test, headerRow + 1, getColumnWithName( "id", test ), coins ); // doesn't matter which column as long as one of ["id","name","symbol"]
     UPDATE();
 }

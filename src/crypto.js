@@ -515,7 +515,7 @@ function getCmcData() {
     // TODO returned cached cmcData if fresh enough
 }
 
-const cmcCoinCache = new Set( [] );
+const cmcCoinCache = [];
 
 /**
  * Parse JSON and render the results in a string template.
@@ -539,7 +539,10 @@ function coinValueFrom( coin, key ) {
         obj = [ obj ];
     }
     const filteredObj = obj.filter( thisObj => thisObj.id === coin || thisObj.symbol.toLowerCase() === coin );
-    cmcCoinCache.add( filteredObj );
+    if ( cmcCoinCache.indexOf( filteredObj ) === -1 ) {
+        cmcCoinCache.push( filteredObj );
+    }
+    cmcCoinCache.push( filteredObj );
     return key.replace( /\s*(\w+)\s*/g, ( match, varName ) => filteredObj[ 0 ][ varName ] );
 }
 
@@ -557,23 +560,15 @@ function coinValueFrom( coin, key ) {
  *        flat array to be set
  * @customfunction
  */
-function setColumn( sheet, row, column, data ) {
-    const mappedData = data.map( element => [ element ] );
-    sheet.getRange( row, column, data.length, 1 ).setValues( mappedData );
-// todo
-    // const colData = [];
-    // for ( let index = 0; index < data.length; index += 1 ) {
-    //     colData.push( [ data[ index ] ] );
-    // }
-    // sheet.getRange( row, column, data.length, 1 ).setValues( colData );
-}
 
 function SETUP() {
     additionalData.splice( additionalData.indexOf( "Local Wallet Quantity" ) + 1, 0, ...exchanges );
     const headers = Object.keys( cmcData[ 0 ] ).concat( additionalData );
     test.getRange( headerRow, initialColumn, 1, headers.length ).setValues( [ headers ] );
+    const coinRange = test.getRange( headerRow + 1, getColumnWithName( "id", test ), coins.length, 1 );
     test.getRange( 1, initialColumn ).setValue( [ "TOTAL:" ] );
-    setColumn( test, headerRow + 1, getColumnWithName( "id", test ), coins ); // doesn't matter which column as long as one of ["id","name","symbol"]
+    coinRange.setValues( coins.map( x => [ x ] ) );
+    fakeData( test );
     UPDATE();
 }
 function UPDATE() {
@@ -646,7 +641,6 @@ function updateValues( currency, column, sheet ) {
         sheet.getRange( headerRow + 1 + i, column ).setValue( [ currentValue ] );
     }
     totalCell.setValue( sum( totalRange.getValues() ) );
-    // totalCell.setValue( sum( totalRange.getValues().reduce( ( accumulator, currentValue ) => accumulator.concat( currentValue ), [] ) ) );
 }
 function updatePercents( sheet ) {
     const portfolioPercentageColumn = getColumnWithName( "Portfolio Percentage", sheet );
@@ -754,18 +748,36 @@ function sumProduct( array /* other arrays*/ ) {
         err = 0,
         tot = 0;
 
-    for ( var i = 1; i < dim; ++i ) {
+    for ( let i = 1; i < dim; i += 1 ) {
         if ( !Array.isArray( arguments[ i ] ) || arguments[ i ].length !== len ) return NaN;
         args[ i ] = arguments[ i ];
     }
 
     // modified Kahan Sum
-    for ( i = 0; i < len; ++i ) {
+    for ( let i = 0; i < len; i += 1 ) {
         let prod = 1;
-        for ( let j = 0; j < args.length; ++j ) prod *= args[ j ][ i ];
+        for ( let j = 0; j < args.length; j += 1 ) prod *= args[ j ][ i ];
         sum += prod;
         err += sum - tot - prod;
         tot = sum;
     }
     return sum - err;
+}
+
+function fakeData( sheet ) {
+    // get range for wallets
+    const walletColumnInitial = getColumnWithName( "Local Wallet Quantity", sheet );
+    const walletColumnFinal = getColumnWithName( "Others", sheet );
+    const wallets = sheet.getRange( headerRow + 1, walletColumnInitial, coins.length, ( walletColumnFinal - walletColumnInitial ) + 1 );
+    const walletValues = wallets.getValues();
+    const flattenedWallet = walletValues.reduce( ( x, y ) => x.concat( y ), [] );
+    const flattenedFiltered = flattenedWallet.filter( String );
+
+    if ( flattenedFiltered.length < 1 ) {
+        const randomValues = [];
+        walletValues.forEach( ( array ) => {
+            randomValues.push( array.map( z => Math.random() ) );
+        } );
+        wallets.setValues( randomValues );
+    }
 }
